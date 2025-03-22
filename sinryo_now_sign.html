@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>外来状況（診療科毎）</title>
+  <style>
+    /* 全体レイアウト用のコンテナ */
+    .display-board {
+      width: 800px;               /* 表示盤の幅（必要に応じて調整） */
+      border: 1px solid #fff;     /* 外枠の線（1px・白） */
+      background-color: gray;     /* 背景色を灰色に */
+      color: #fff;                /* 文字色を白に */
+      font-family: sans-serif;
+      margin: 20px auto;          /* ページ中央寄せ */
+      padding: 5px;               /* paddingを5pxに */
+    }
+
+    /* 上段：診療科名・担当医 */
+    .top-row {
+      display: flex;
+      margin-bottom: 5px;
+    }
+    .department {
+      flex: 1;
+      background-color: #0052cc;  /* 内科1診の背景色（例） */
+      font-size: 1.5rem;
+      padding: 10px;
+      text-align: center;
+    }
+    .doctor {
+      flex: 1;
+      background-color: #ff66cc;  /* 担当医の背景色（例） */
+      font-size: 1.5rem;
+      padding: 10px;
+      text-align: center;
+    }
+
+    /* 診察中の番号表示（大きく目立つように） */
+    .current-number {
+      background-color: #9933cc;  /* 診察中の背景色（例） */
+      font-size: 2rem;
+      text-align: center;
+      padding: 20px 10px;
+      margin-bottom: 5px;
+    }
+
+    /* まもなく呼び出し＆番号一覧 */
+    .call-row {
+      display: flex;
+      margin-bottom: 5px;
+    }
+    .call-label {
+      flex: 2;
+      background-color: #ff9900;  /* 「まもなくお呼び出しします」の背景色（例） */
+      font-size: 1.2rem;
+      padding: 10px;
+      text-align: center;
+    }
+    .call-numbers {
+      flex: 3;
+      display: flex;
+      align-items: center;
+      justify-content: space-evenly;
+      background-color: #ffcc33;  /* 呼び出し番号枠の背景色（例） */
+      font-size: 1.6rem;
+      padding: 10px;
+    }
+    .call-numbers div {
+      background-color: #fff;
+      color: #000;
+      border-radius: 5px;
+      padding: 5px 10px;
+      min-width: 50px;
+      text-align: center;
+    }
+
+    /* 予約進行状況 */
+    .reservation-row {
+      display: flex;
+      margin-bottom: 5px;
+    }
+    .reservation-label {
+      flex: 2;
+      background-color: #999;     /* 「予約進行状況」の背景色（例） */
+      font-size: 1.2rem;
+      padding: 10px;
+      text-align: center;
+    }
+    .consulTime-label {
+      flex: 2;
+//      background-color: #999;     /* 現在の経過時間ラベル */
+      font-size: 1.2rem;
+      padding: 1px;
+      text-align: center;
+    }
+    .reservation-status {
+      flex: 3;
+      background-color: #66cc66;  /* 「予定通り」の背景色（例） */
+      font-size: 1.6rem;
+      text-align: center;
+      padding: 10px;
+    }
+
+    /* テロップ用フッター */
+    .footer-message {
+      background-color: #fff;
+      color: #000;
+      position: relative;   /* テロップ要素の位置指定に使う */
+      overflow: hidden;     /* はみ出した文字を隠す */
+      height: 2em;          /* テロップ行の高さ（文字サイズに合わせる） */
+      margin-top: 10px;
+    }
+    .footer-message span {
+      position: absolute;  
+      white-space: nowrap; 
+      font-size: 1rem;
+      line-height: 2em;    /* 見た目上テキストが中央にくるよう調整 */
+      animation: marquee 10s linear infinite;
+    }
+
+    /* テロップのアニメーション（右→左） */
+    @keyframes marquee {
+      0%   { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="display-board">
+  <!-- 上段：診療科名・担当医 -->
+  <div class="top-row">
+    <div class="department">消化器/腎臓</div>
+    <div class="doctor">担当医 杉原</div>
+  </div>
+
+  <!-- 診察中の番号 -->
+  <div class="current-number">
+    診察中 1234 番
+    <div class="consulTime-label">現在の診察時間：<span id="consultationTimer">05:34</span></div>
+  </div>
+
+  <!-- まもなく呼び出し番号 -->
+  <div class="call-row">
+    <div class="call-label">本日の受付人数：55人</div>
+    <div class="call-numbers">終了人数：36人(平均診察時間：18分)</div>
+  </div>
+
+  <!-- 予約進行状況 -->
+  <div class="reservation-row">
+    <div class="reservation-label">予約進行状況</div>
+    <div class="reservation-status">予定通り</div>
+  </div>
+
+  <!-- テロップ風メッセージ -->
+  <div class="footer-message">
+    <span>受付票のお呼び出し番号をご確認ください。</span>
+  </div>
+</div>
+  <script>
+    // 「現在の診察時間」タイマー（例として初期値05:34 = 334秒からカウントアップ）
+    let consultationTime = 5 * 60 + 34;  // 初期値（秒）
+
+    function updateConsultationTimer() {
+      consultationTime++;
+      const minutes = Math.floor(consultationTime / 60);
+      const seconds = consultationTime % 60;
+      document.getElementById('consultationTimer').textContent =
+        String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+    }
+    // 1秒ごとに更新
+    setInterval(updateConsultationTimer, 1000);
+  </script>
+
+</body>
+</html>
