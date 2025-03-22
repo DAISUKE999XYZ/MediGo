@@ -61,6 +61,7 @@
       font-size: 14px;
       line-height: 1.4;
     }
+    /* status-box */
     .status-box {
       background-color: #fff;
       border-radius: 8px;
@@ -85,6 +86,95 @@
       margin-bottom: 8px;
       line-height: 1.4;
     }
+    .status-box {
+      .grid-wrap {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        grid-template-rows: auto;
+        grid-template-areas: 
+          "B B B B B B"
+          "A A A C C D"
+          "A A A C C D"
+          "E E E C C D"
+          "F F F F F F";
+
+        .grid-item-style {
+          border: #444 1px solid;
+        }
+        .common-text-style {
+          position: relative;
+          text-align: center;
+          align-content: center;
+          justify-items: center;
+
+          > span {
+            position: absolute;
+            top: 0;
+            left: 0;
+            font-size: 1rem;
+            font-weight: 500;
+          }
+        }
+
+        .number-box {
+          grid-area: A;
+          height: 100px;
+          font-size: 2rem;
+          font-weight: 700;
+        }
+        .now-time-box {
+          grid-area: B;
+          height: 25px;
+          text-align: end;
+        }
+        .change-sort-box {
+          grid-area: E;
+          height: 5rem;
+        }
+        .reception-box {
+          grid-area: C;
+          font-size: 2rem;
+          font-weight: 700;
+        }
+        .reception-gauge-box {
+          grid-area: D;
+        }
+        .detail-box {
+          grid-area: F;
+        }
+      }
+    }
+    /* status-box */
+    /* progress */
+    .progress-container {
+      width: 20px;
+      height: 80px;
+      background-color: #ddd;
+      border-radius: 6px;
+      position: relative;
+      overflow: hidden;
+      border: 2px solid #aaa;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 100%;
+      background-color: #2C7FB8;
+      position: absolute;
+      bottom: 0;
+      transition: height 1s ease-in-out;
+    }
+
+    /* 例: 50% の進捗 */
+    .progress-container[data-progress="50"] .progress-bar {
+      height: 50%;
+    }
+
+    /* 例: 20% の進捗 */
+    .progress-container[data-progress="20"] .progress-bar {
+      height: 20%;
+    }
+    /* progress */
     .notification {
       background-color: #fff;
       border-radius: 8px;
@@ -145,12 +235,27 @@
     <div class="status-box">
       <h3>
         <span>本日の診察状況</span>
-        <span id="currentTime"></span>
+        <!-- <span id="currentTime"></span> -->
       </h3>
-      <p>受付人数：56 人</p>
+      <div class="grid-wrap">
+        <div class="grid-item-style number-box common-text-style"><span>受付番号</span>A371</div>
+        <div class="now-time-box"><div id="currentTime"></div></div>
+        <div class="grid-item-style change-sort-box common-text-style">※順番は変更なし※</div>
+        <div class="grid-item-style reception-box common-text-style"><span>受付人数</span>56 人</div>
+        <div class="grid-item-style reception-gauge-box common-text-style">
+          <div class="progress-container" data-progress="50">
+            <div class="progress-bar"></div>
+          </div>
+        </div>
+        <div class="grid-item-style detail-box">
+          <div>ひとりあたりの診察時間：24分（平均）</div>
+          <div>現在の診察時間：<span id="consultationTimer">05:34</span></div>
+        </div>
+      </div>
+      <!-- <p>受付人数：56 人</p>
       <p>終了人数：23 人</p>
       <p>ひとりあたりの診察時間：24分（平均）</p>
-      <p>現在の診察時間：<span id="consultationTimer">05:34</span></p>
+      <p>現在の診察時間：<span id="consultationTimer">05:34</span></p> -->
     </div>
 
     <!-- 案内メッセージ -->
@@ -193,6 +298,17 @@
     }
     // 1秒ごとに更新
     setInterval(updateConsultationTimer, 1000);
+  </script>
+
+  <script>
+    function updateProgress(value) {
+        document.querySelector(".progress-container").setAttribute("data-progress", value);
+    }
+
+    // 3秒後に進捗を20%に変更（テスト用）
+    setTimeout(() => {
+        updateProgress(20);
+    }, 3000);
   </script>
 </body>
 </html>
