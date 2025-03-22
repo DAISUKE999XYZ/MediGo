@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>おちらと生活 Demo</title>
+  <!-- Chart.js の読み込み -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* 基本リセット */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background-color: #f5f5f5; padding-bottom: 60px; }
+    /* ヘッダーのスタイル変更：上下幅を画面の5%に設定 */
+    header {
+      background-color: #4CAF50;
+      color: white;
+      text-align: center;
+      height: 5vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    header h1 {
+      font-size: 3vh;
+      margin: 0;
+    }
+    .container { padding: 20px; }
+    .hidden { display: none; }
+    nav { 
+      position: fixed; bottom: 0; left: 0; right: 0; 
+      background-color: #ffffff; border-top: 1px solid #ccc; 
+      display: flex; justify-content: space-around; padding: 10px 0;
+    }
+    nav button { background: none; border: none; font-size: 16px; cursor: pointer; }
+    /* 円形グラフ（ゲージ）のスタイル：色を青系に変更 */
+    .gauge {
+      width: 150px; 
+      height: 150px; 
+      border-radius: 50%;
+      background: conic-gradient(#2196F3 0% 80%, #ddd 80% 100%);
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+      margin: 20px auto;
+    }
+    .gauge span { font-size: 32px; font-weight: bold; }
+    /* フォーム要素 */
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; }
+    input, select { width: 100%; padding: 8px; font-size: 16px; }
+    /* 棒グラフのシミュレーション */
+    .bar-chart { display: flex; flex-direction: column; gap: 10px; }
+    .bar { background-color: #2196F3; height: 24px; border-radius: 4px; }
+    .bar-container { background-color: #ddd; width: 100%; border-radius: 4px; }
+    .bar-label { margin-bottom: 5px; }
+    /* カードスタイル（健康予測・設定画面用） */
+    .card {
+      background-color: #fff;
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    /* 設定リスト用スタイル */
+    .settings-list {
+      list-style-type: none;
+      padding: 0;
+    }
+    .settings-list li {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    .settings-list li:last-child {
+      border-bottom: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>おちらと生活</h1>
+  </header>
+
+  <!-- メイン画面 -->
+  <div id="mainScreen" class="container">
+    <div class="gauge">
+      <span id="healthScore">80</span>
+    </div>
+    <p style="text-align: center;">素晴らしいです！</p>
+    <!-- 過去のスコア推移を表示する折れ線グラフ -->
+    <canvas id="scoreHistoryChart" width="300" height="150" style="display: block; margin: 20px auto;"></canvas>
+  </div>
+
+  <!-- データ入力画面 -->
+  <div id="dataInputScreen" class="container hidden">
+    <h2>データ入力</h2>
+    <div class="form-group">
+      <label for="steps">歩数</label>
+      <input type="number" id="steps" placeholder="例: 10000">
+    </div>
+    <div class="form-group">
+      <label for="sleep">睡眠時間 (時間)</label>
+      <input type="number" id="sleep" placeholder="例: 7">
+    </div>
+    <div class="form-group">
+      <label for="sleepQuality">睡眠の質</label>
+      <select id="sleepQuality">
+        <option value="良い">良い</option>
+        <option value="普通">普通</option>
+        <option value="悪い">悪い</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="water">水分摂取量 (ml)</label>
+      <input type="number" id="water" placeholder="例: 2000">
+    </div>
+    <!-- 自動入力の連携状況などもここに表示可能 -->
+    <button onclick="saveData()">保存</button>
+  </div>
+
+  <!-- スコア詳細画面 -->
+  <div id="scoreDetailsScreen" class="container hidden">
+    <h2>スコア詳細</h2>
+    <div class="bar-chart">
+      <div>
+        <div class="bar-label">歩数: 20ポイント</div>
+        <div class="bar-container"><div class="bar" style="width: 70%;"></div></div>
+      </div>
+      <div>
+        <div class="bar-label">睡眠: 15ポイント</div>
+        <div class="bar-container"><div class="bar" style="width: 50%;"></div></div>
+      </div>
+      <div>
+        <div class="bar-label">水分摂取: 10ポイント</div>
+        <div class="bar-container"><div class="bar" style="width: 30%;"></div></div>
+      </div>
+    </div>
+    <p style="margin-top:20px;">
+      スコアアップのためのアドバイス:<br>
+      ・毎日30分の運動を心がけましょう。<br>
+      ・規則正しい睡眠を取ることが重要です。
+    </p>
+  </div>
+
+  <!-- 健康予測画面 -->
+  <div id="healthPredictionScreen" class="container hidden">
+    <h2>健康予測</h2>
+    <div class="card">
+      <h3>リスク評価</h3>
+      <p>将来の健康リスク予測結果：<strong>中</strong></p>
+      <ul>
+        <li>高血圧リスク：中</li>
+        <li>糖尿病リスク：低</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>リスク軽減アクションプラン</h3>
+      <p>・食生活の改善<br>・定期的な運動</p>
+    </div>
+  </div>
+
+  <!-- 設定画面 -->
+  <div id="settingsScreen" class="container hidden">
+    <h2>設定</h2>
+    <div class="card">
+      <ul class="settings-list">
+        <li>プロフィール編集</li>
+        <li>通知設定</li>
+        <li>データ連携設定</li>
+        <li>利用規約</li>
+        <li>プライバシーポリシー</li>
+        <li>ヘルプ</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ナビゲーションバー -->
+  <nav>
+    <button onclick="showScreen('mainScreen')">メイン</button>
+    <button onclick="showScreen('dataInputScreen')">データ入力</button>
+    <button onclick="showScreen('scoreDetailsScreen')">スコア詳細</button>
+    <button onclick="showScreen('healthPredictionScreen')">健康予測</button>
+    <button onclick="showScreen('settingsScreen')">設定</button>
+  </nav>
+
+  <script>
+    // 画面切替処理
+    function showScreen(screenId) {
+      const screens = ['mainScreen', 'dataInputScreen', 'scoreDetailsScreen', 'healthPredictionScreen', 'settingsScreen'];
+      screens.forEach(function(id) {
+        document.getElementById(id).classList.add('hidden');
+      });
+      document.getElementById(screenId).classList.remove('hidden');
+    }
+
+    // データ保存のダミー処理
+    function saveData() {
+      alert('データが保存されました！');
+      showScreen('mainScreen');
+    }
+
+    // 折れ線グラフの初期化
+    window.addEventListener('load', function() {
+      const ctx = document.getElementById('scoreHistoryChart').getContext('2d');
+      const scoreHistoryChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['3/18', '3/19', '3/20', '3/21', '3/22', '3/23'],
+          datasets: [{
+            label: '健康スコア',
+            data: [70, 75, 80, 82, 78, 80],
+            fill: false,
+            borderColor: 'rgba(33, 150, 243, 1)',
+            tension: 0.1
+          }]
+        },
+        options: {
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: '日付'
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'スコア'
+              },
+              suggestedMin: 0,
+              suggestedMax: 100
+            }
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>
