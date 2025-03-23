@@ -52,7 +52,7 @@
     .call-label {
       flex: 2;
       background-color: #999;  /* 「まもなくお呼び出しします」の背景色（例） */
-      font-size: 1.2rem;
+      font-size: 1.6rem;
       padding: 10px;
       text-align: center;
     }
@@ -88,14 +88,15 @@
     }
     .consulTime-label {
       flex: 2;
-/* //      background-color: #999;     現在の経過時間ラベル */
+//      background-color: #999;     /* 現在の経過時間ラベル */
       font-size: 1.2rem;
       padding: 1px;
       text-align: center;
     }
     .reservation-status {
       flex: 3;
-      background-color: #66cc66;  /* 「予定通り」の背景色（例） */
+//      background-color: #66cc66;  /* 「予定通り」の背景色（例） */
+      background-color: #ffb300;  /* 「遅れ」の背景色（例） */
       font-size: 1.6rem;
       text-align: center;
       padding: 10px;
@@ -112,7 +113,8 @@
     }
     .footer-message span {
       position: absolute;  
-      white-space: nowrap; 
+      white-space: nowrap;
+left: 50%; 
       font-size: 1rem;
       line-height: 2em;    /* 見た目上テキストが中央にくるよう調整 */
       animation: marquee 10s linear infinite;
@@ -120,8 +122,8 @@
 
     /* テロップのアニメーション（右→左） */
     @keyframes marquee {
-      0%   { transform: translateX(100%); }
-      100% { transform: translateX(-100%); }
+      0%   { transform: translateX(180%); }
+      100% { transform: translateX(-220%); }
     }
   </style>
 </head>
@@ -136,7 +138,7 @@
 
   <!-- 診察中の番号 -->
   <div class="current-number">
-    診察中 1234 番
+    診察中 A371 番
     <div class="consulTime-label">現在の診察時間：<span id="consultationTimer">05:34</span></div>
   </div>
 
@@ -149,7 +151,7 @@
   <!-- 予約進行状況 -->
   <div class="reservation-row">
     <div class="reservation-label">予約進行状況</div>
-    <div class="reservation-status">予定通り</div>
+    <div class="reservation-status" id="reservationStatus">30分遅れ</div>
   </div>
 
   <!-- テロップ風メッセージ -->
@@ -159,17 +161,30 @@
 </div>
   <script>
     // 「現在の診察時間」タイマー（例として初期値05:34 = 334秒からカウントアップ）
-    let consultationTime = 5 * 60 + 34;  // 初期値（秒）
+    let consultationTime = 5 * 60 + 54;  // 初期値（秒）
 
     function updateConsultationTimer() {
       consultationTime++;
       const minutes = Math.floor(consultationTime / 60);
       const seconds = consultationTime % 60;
       document.getElementById('consultationTimer').textContent =
-        String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+        String(minutes).padStart(2, '0') + '分' + String(seconds).padStart(2, '0') + '秒';
     }
     // 1秒ごとに更新
     setInterval(updateConsultationTimer, 1000);
+
+  // 診察状況を画面リロードごとにランダムに設定する
+  const statuses = [
+    { text: "予定通り", color: "green" },
+    { text: "急患対応中", color: "red" },
+    { text: "30分遅れ", color: "orange" }
+  ];
+  const randomIndex = Math.floor(Math.random() * statuses.length);
+  const selectedStatus = statuses[randomIndex];
+  const reservationStatusElement = document.getElementById('reservationStatus');
+  reservationStatusElement.textContent = selectedStatus.text;
+  reservationStatusElement.style.backgroundColor = selectedStatus.color;
+
   </script>
 
 </body>
