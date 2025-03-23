@@ -238,7 +238,7 @@
         <!-- <span id="currentTime"></span> -->
       </h3>
       <div class="grid-wrap">
-        <div class="grid-item-style number-box common-text-style"><span>受付番号</span>A371</div>
+        <div class="grid-item-style number-box common-text-style"><span>診察中番号</span>A251</div>
         <div class="now-time-box"><div id="currentTime"></div></div>
         <div class="grid-item-style change-sort-box common-text-style">※順番は変更なし※</div>
         <div class="grid-item-style reception-box common-text-style"><span>受付人数</span>56 人</div>
@@ -288,13 +288,13 @@
     setInterval(updateTime, 1000);
 
     // 「現在の診察時間」タイマー（例として初期値05:34 = 334秒からカウントアップ）
-    let consultationTime = 5 * 60 + 34;  // 初期値（秒）
+    let consultationTime = 5 * 60 + 54;  // 初期値（秒）
     function updateConsultationTimer() {
       consultationTime++;
       const minutes = Math.floor(consultationTime / 60);
       const seconds = consultationTime % 60;
       document.getElementById('consultationTimer').textContent =
-        String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+        String(minutes).padStart(2, '0') + '分' + String(seconds).padStart(2, '0') + "秒";
     }
     // 1秒ごとに更新
     setInterval(updateConsultationTimer, 1000);
